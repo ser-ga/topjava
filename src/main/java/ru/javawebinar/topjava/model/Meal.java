@@ -25,6 +25,10 @@ public class Meal {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public LocalDateTime getDateTime() {
         return dateTime;
     }

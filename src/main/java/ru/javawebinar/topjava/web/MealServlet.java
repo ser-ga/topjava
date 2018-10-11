@@ -27,15 +27,6 @@ public class MealServlet extends HttpServlet {
     private MealRepository repository;
 
     @Override
-    public void init(ServletConfig servletConfig) {
-        try {
-            super.init(servletConfig);
-        } catch (ServletException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
     public void init() {
         repository = new MealRepositoryInMemory();
     }

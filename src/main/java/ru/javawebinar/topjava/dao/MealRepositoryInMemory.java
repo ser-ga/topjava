@@ -28,12 +28,13 @@ public class MealRepositoryInMemory implements MealRepository {
     }
 
     @Override
-    public void add(Meal meal) {
-        if (meal == null) return;
+    public Meal add(Meal meal) {
+
+        if (meal == null) return null;
         if (meal.getId() == 0) {
-            Meal newMeal = new Meal(generateId(), meal.getDateTime(), meal.getDescription(), meal.getCalories());
-            meals.put(newMeal.getId(), newMeal);
+            meal.setId(generateId());
         }
+        return meals.put(meal.getId(), meal);
     }
 
     @Override
@@ -47,8 +48,8 @@ public class MealRepositoryInMemory implements MealRepository {
     }
 
     @Override
-    public void update(Meal meal) {
-        meals.replace(meal.getId(), meal);
+    public Meal update(Meal meal) {
+        return meals.replace(meal.getId(), meal);
     }
 
     @Override
