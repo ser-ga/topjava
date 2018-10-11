@@ -24,37 +24,51 @@
     </thead>
     <tbody>
     <c:forEach items="${meals}" var="item">
-    <tr style="color: <c:out value="${not item.isExceed() ? 'green' : 'red'}" />">
+        <tr style="color: <c:out value="${not item.isExceed() ? 'green' : 'red'}" />">
             <td>${item.getDate()} ${item.getTime()}</td>
             <td>${item.getDescription()}</td>
             <td>${item.getCalories()}</td>
-            <td><a href="meals?id=${item.getId()}&action=edit">edit</a> | <a href="meals?id=${item.getId()}&action=delete">delete</a></td>
+            <td><a href="meals?id=${item.getId()}&action=update">edit</a> | <a
+                    href="meals?id=${item.getId()}&action=delete">delete</a></td>
         </tr>
     </c:forEach>
     </tbody>
 </table>
-<form action="meals?action=new" method="post">
+<form action="meals?action=${meal==null ? 'new' : 'update'}" method="post">
     <table>
         <thead>
         <tr>
-            <th><label for="date">Date</label></th>
-            <th><label for="time">Time</label></th>
+            ${meal==null ? '' : '<th><label for="mealId">id</label></th>'}
+            <th><label for="datetime">Date / Time</label></th>
             <th><label for="desc">Description</label></th>
             <th><label for="cal">Calories</label></th>
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td><input type="date" name="date" id="date"></td>
-            <td><input type="time" name="time" id="time"></td>
-            <td><input type="text" name="description" id="desc"></td>
-            <td><input type="number" name="calories" id="cal"></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td style="text-align: center"><button type="submit">Add meal</button></td>
-            <td></td>
-        </tr>
+
+        <c:if test="${meal==null}">
+            <tr>
+                <input type="hidden" name="mealId" id="mealId" value="0" required>
+                <td><input type="datetime-local" name="datetime" id="datetime" value="" required></td>
+                <td><input type="text" name="description" id="desc" value="" required></td>
+                <td><input type="number" name="calories" id="cal" value="" required></td>
+                <td>
+                    <button type="submit">Add meal</button>
+                </td>
+            </tr>
+        </c:if>
+        <c:if test="${meal!=null}">
+            <tr>
+                <td><input type="hidden" name="mealId" id="mealId" value="${meal.getId()}" required>${meal.getId()}</td>
+                <td><input type="datetime-local" name="datetime" id="datetime" value="${meal.getDateTime()}" required>
+                </td>
+                <td><input type="text" name="description" id="desc" value="${meal.getDescription()}" required></td>
+                <td><input type="number" name="calories" id="cal" value="${meal.getCalories()}" required></td>
+                <td>
+                    <button type="submit">Update</button>
+                </td>
+            </tr>
+        </c:if>
         </tbody>
     </table>
 </form>

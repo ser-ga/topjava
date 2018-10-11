@@ -1,13 +1,14 @@
 package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
-import ru.javawebinar.topjava.dao.CRUDRepository;
-import ru.javawebinar.topjava.dao.VirtualMealRepository;
+import ru.javawebinar.topjava.dao.MealRepository;
+import ru.javawebinar.topjava.dao.MealRepositoryInMemory;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealWithExceed;
 import ru.javawebinar.topjava.util.MealsUtil;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -22,8 +23,22 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class MealServlet extends HttpServlet {
     private static final Logger log = getLogger(MealServlet.class);
-    private CRUDRepository<Meal> repository = VirtualMealRepository.getInstance();
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+    private MealRepository repository;
+
+    @Override
+    public void init(ServletConfig servletConfig) {
+        try {
+            super.init(servletConfig);
+        } catch (ServletException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void init() {
+        repository = new MealRepositoryInMemory();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -39,21 +54,19 @@ public class MealServlet extends HttpServlet {
                 log.debug("remove meal");
                 repository.remove(id);
                 response.sendRedirect("meals");
-                break;
-            case "edit":
-                log.debug("forward to edit page");
+                return;
+            case "update":
+                log.debug("view update form");
                 Meal meal = repository.getById(id);
                 request.setAttribute("meal", meal);
-                view = request.getRequestDispatcher("edit.jsp");
-                view.forward(request, response);
                 break;
             default:
                 log.debug("list meals");
-                List<MealWithExceed> meals = MealsUtil.getFilteredWithExceeded(repository.getAll(), LocalTime.MIN, LocalTime.MAX, 2000);
-                request.setAttribute("meals", meals);
-                view = request.getRequestDispatcher("meals.jsp");
-                view.forward(request, response);
         }
+        List<MealWithExceed> meals = MealsUtil.getFilteredWithExceeded(repository.getAll(), LocalTime.MIN, LocalTime.MAX, 2000);
+        request.setAttribute("meals", meals);
+        view = request.getRequestDispatcher("meals.jsp");
+        view.forward(request, response);
     }
 
     @Override
@@ -61,27 +74,22 @@ public class MealServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
         if (action == null) action = "";
-        if (action.equals("new")) {
-            log.debug("new meal");
-            Meal meal = new Meal(
-                    0,
-                    LocalDateTime.parse(request.getParameter("date") + " " + request.getParameter("time"), formatter),
-                    request.getParameter("description"),
-                    Integer.parseInt(request.getParameter("calories"))
-            );
-            repository.add(meal);
-            response.sendRedirect("meals");
-        }
-        if (action.equals("update")) {
-            log.debug("update meal");
-            Meal meal = new Meal(
-                    Integer.parseInt(request.getParameter("mealId")),
-                    LocalDateTime.parse(request.getParameter("date") + " " + request.getParameter("time"), formatter),
-                    request.getParameter("description"),
-                    Integer.parseInt(request.getParameter("calories"))
-            );
-            repository.update(meal);
-            response.sendRedirect("meals");
+        Meal meal = new Meal(
+                Integer.parseInt(request.getParameter("mealId")),
+                LocalDateTime.parse(request.getParameter("datetime"), formatter),
+                request.getParameter("description"),
+                Integer.parseInt(request.getParameter("calories"))
+        );
+        switch (action) {
+            case "new":
+                log.debug("new meal");
+                repository.add(meal);
+                response.sendRedirect("meals");
+                break;
+            case "update":
+                log.debug("update meal");
+                repository.update(meal);
+                response.sendRedirect("meals");
         }
     }
 }
