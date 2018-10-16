@@ -3,8 +3,10 @@ package ru.javawebinar.topjava.repository.mock;
 import org.springframework.stereotype.Repository;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
+import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +57,14 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
         return repository.values().stream()
                 .filter(e -> e.getUserId() == userId)
                 .sorted((o1, o2) -> o2.getDateTime().compareTo(o1.getDateTime()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Meal> getAllBetweenDates(LocalDate startDate, LocalDate finishDate, int userId) {
+        return repository.values().stream()
+                .filter(e -> DateTimeUtil.isBetween(e.getDate(), startDate, finishDate))
+                .filter(e -> e.getUserId() == userId)
                 .collect(Collectors.toList());
     }
 }

@@ -5,6 +5,7 @@
 <%--<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>--%>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Meal list</title>
     <style>
         .normal {
@@ -14,6 +15,10 @@
         .exceeded {
             color: red;
         }
+
+        table td {
+            padding-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -21,6 +26,37 @@
     <h3><a href="index.html">Home</a></h3>
     <h2>Meals</h2>
     <a href="meals?action=create">Add Meal</a>
+    <hr/>
+    <form action="meals" method="post">
+        <input type="hidden" name="action" value="filter"/>
+        <table>
+            <thead>
+            <tr>
+                <th colspan="2">Дата</th>
+                <th colspan="2">Время</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><label for="startDate">от</label></td>
+                <td><label for="finishDate">до</label></td>
+                <td><label for="startTime">от</label></td>
+                <td><label for="finishTime">до</label></td>
+            </tr>
+            <tr>
+                <td><input type="date" name="startDate" id="startDate" value="${startDate}"/></td>
+                <td><input type="date" name="finishDate" id="finishDate" value="${finishDate}"/></td>
+                <td><input type="time" name="startTime" id="startTime" value="${startTime}"/></td>
+                <td><input type="time" name="finishTime" id="finishTime" value="${finishTime}"/></td>
+                <td>
+                    <button type="submit">Отфильтровать</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </form>
+
     <hr/>
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
@@ -48,6 +84,7 @@
             </tr>
         </c:forEach>
     </table>
+    <c:if test="${meals.size() == 0}"><p><b>Данные не найдены</b></p></c:if>
 </section>
 </body>
 </html>
