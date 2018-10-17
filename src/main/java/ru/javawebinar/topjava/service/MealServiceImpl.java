@@ -52,23 +52,9 @@ public class MealServiceImpl implements MealService {
 
     @Override
     public List<MealWithExceed> getFiltered(LocalDate startDate, LocalDate finishDate, LocalTime startTime, LocalTime finishTime, int userId, int authUserCaloriesPerDay) {
-        boolean needDateFilter = (startDate != null) || (finishDate != null);
-        boolean needTimeFilter = (startTime != null) || (finishTime != null);
-        List<MealWithExceed> result;
-        if (needDateFilter) result = MealsUtil.getWithExceeded(
-                repository.getAllBetweenDates(
-                        startDate == null ? LocalDate.MIN : startDate,
-                        finishDate == null ? LocalDate.MAX : finishDate,
-                        userId),
-                authUserCaloriesPerDay);
-        else result = getAll(userId, authUserCaloriesPerDay);
-        if (result.isEmpty() || !needTimeFilter) return result;
-        return result.stream()
-                .filter(e -> DateTimeUtil.isBetween(
-                        e.getDateTime().toLocalTime(),
-                        startTime == null ? LocalTime.MIN : startTime,
-                        finishTime == null ? LocalTime.MAX : finishTime
-                ))
+        return MealsUtil.getWithExceeded(repository.getAllBetweenDates(startDate, finishDate, userId), authUserCaloriesPerDay)
+                .stream()
+                .filter(e -> DateTimeUtil.isBetween(e.getDateTime().toLocalTime(), startTime, finishTime))
                 .collect(Collectors.toList());
     }
 }

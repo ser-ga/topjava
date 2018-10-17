@@ -1,6 +1,7 @@
 package ru.javawebinar.topjava.repository.mock;
 
 import org.springframework.stereotype.Repository;
+import ru.javawebinar.topjava.model.AbstractBaseEntity;
 import ru.javawebinar.topjava.model.AbstractNamedEntity;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
@@ -46,11 +47,18 @@ public class InMemoryUserRepositoryImpl implements UserRepository {
 
     @Override
     public List<User> getAll() {
-        return repository.values().stream().sorted(Comparator.comparing(AbstractNamedEntity::getName)).collect(Collectors.toList());
+        return repository.values()
+                .stream()
+                .sorted(Comparator.comparing(AbstractNamedEntity::getName).thenComparing(AbstractBaseEntity::getId))
+                .collect(Collectors.toList());
     }
 
     @Override
     public User getByEmail(String email) {
-        return repository.values().stream().filter(e -> e.getEmail().equals(email)).findFirst().get();
+        return repository.values()
+                .stream()
+                .filter(e -> e.getEmail().equals(email))
+                .findFirst()
+                .orElse(null);
     }
 }

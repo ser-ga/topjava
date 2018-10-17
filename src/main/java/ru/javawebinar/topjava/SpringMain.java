@@ -26,7 +26,7 @@ public class SpringMain {
             mealRestController.delete(1);
             mealRestController.delete(6);
             System.out.println(mealRestController.getAll());
-            mealRestController.update(new Meal(8, SecurityUtil.getAuthUserId(), now(), "Чай", 50));
+            mealRestController.update(new Meal(8, SecurityUtil.getAuthUserId(), now(), "Чай", 50),8);
             System.out.println(mealRestController.getAll());
             mealRestController.get(5);
         }

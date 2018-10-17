@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
+import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
 import static ru.javawebinar.topjava.web.SecurityUtil.authUserCaloriesPerDay;
 import static ru.javawebinar.topjava.web.SecurityUtil.getAuthUserId;
 
@@ -27,6 +29,7 @@ public class MealRestController {
 
     public Meal create(Meal meal) {
         log.info("create {}", meal);
+        checkNew(meal);
         return service.create(meal, getAuthUserId());
     }
 
@@ -40,9 +43,10 @@ public class MealRestController {
         service.delete(id, getAuthUserId());
     }
 
-    public void update(Meal meal) {
+    public void update(Meal meal, int id) {
         log.info("update {}", meal);
-        service.update(meal, getAuthUserId());
+        assureIdConsistent(meal, id);
+        service.update(meal,  getAuthUserId());
     }
 
     public List<MealWithExceed> getAll() {
@@ -52,7 +56,14 @@ public class MealRestController {
 
     public List<MealWithExceed> getFiltered(LocalDate startDate, LocalDate finishDate, LocalTime startTime, LocalTime finishTime) {
         log.info("list filtered by userId={}", getAuthUserId());
-        return service.getFiltered(startDate, finishDate, startTime, finishTime, getAuthUserId(), authUserCaloriesPerDay());
+        return service.getFiltered(
+                startDate == null ? LocalDate.MIN : startDate,
+                finishDate == null ? LocalDate.MAX : finishDate,
+                startTime == null ? LocalTime.MIN : startTime,
+                finishTime == null ? LocalTime.MAX : finishTime,
+                getAuthUserId(),
+                authUserCaloriesPerDay()
+        );
     }
 
 }

@@ -44,10 +44,10 @@
                 <td><label for="finishTime">до</label></td>
             </tr>
             <tr>
-                <td><input type="date" name="startDate" id="startDate" value="${startDate}"/></td>
-                <td><input type="date" name="finishDate" id="finishDate" value="${finishDate}"/></td>
-                <td><input type="time" name="startTime" id="startTime" value="${startTime}"/></td>
-                <td><input type="time" name="finishTime" id="finishTime" value="${finishTime}"/></td>
+                <td><input type="date" name="startDate" id="startDate" value="${param.startDate}"/></td>
+                <td><input type="date" name="finishDate" id="finishDate" value="${param.finishDate}"/></td>
+                <td><input type="time" name="startTime" id="startTime" value="${param.startTime}"/></td>
+                <td><input type="time" name="finishTime" id="finishTime" value="${param.finishTime}"/></td>
                 <td>
                     <button type="submit">Отфильтровать</button>
                 </td>
