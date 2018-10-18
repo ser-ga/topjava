@@ -7,6 +7,7 @@ import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +34,7 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
             return meal;
         }
         // treat case: update, but absent in storage
-        if (get(meal.getId(), userId) != null) {
+        if (getUserData(userId) != null) {
             return getUserData(userId).computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
         }
         return null;
@@ -41,12 +42,12 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
 
     @Override
     public boolean delete(int id, int userId) {
-        return getUserData(userId).remove(id) != null;
+        return getUserData(userId) != null  && getUserData(userId).remove(id) != null;
     }
 
     @Override
     public Meal get(int id, int userId) {
-        return getUserData(userId).get(id);
+        return getUserData(userId) != null ? getUserData(userId).get(id) : null;
     }
 
     @Override
@@ -60,13 +61,14 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
     }
 
     private List<Meal> getFiltered(Map<Integer, Meal> meals, Predicate<Meal> filter) {
-        return meals.values().stream()
+        if (meals != null) return meals.values().stream()
                 .sorted((o1, o2) -> o2.getDateTime().compareTo(o1.getDateTime()))
                 .filter(filter)
                 .collect(Collectors.toList());
+        return new ArrayList<>();
     }
 
-    private Map<Integer,Meal> getUserData(int userId){
+    private Map<Integer, Meal> getUserData(int userId) {
         return repository.get(userId);
     }
 }
