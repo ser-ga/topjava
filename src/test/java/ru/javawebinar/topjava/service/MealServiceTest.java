@@ -13,12 +13,14 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 
 import static ru.javawebinar.topjava.MealTestData.*;
 
 @ContextConfiguration({
         "classpath:spring/spring-app.xml",
+        "classpath:spring/spring-app-jdbc.xml",
         "classpath:spring/spring-db.xml"
 })
 @RunWith(SpringRunner.class)
@@ -42,36 +44,36 @@ public class MealServiceTest {
 
     @Test(expected = NotFoundException.class)
     public void foreignGet() throws Exception {
-        Meal meal = service.get(MEAL_ID3, ADMIN_ID);
+        Meal meal = service.get(MEAL_ID1, USER_ID);
     }
 
     @Test
     public void delete() throws Exception {
         service.delete(MEAL_ID1, ADMIN_ID);
-        assertMatch(service.getAll(ADMIN_ID), MEAL2);
+        assertMatch(service.getAll(ADMIN_ID), MEAL4, MEAL3, MEAL2);
     }
 
     @Test(expected = NotFoundException.class)
     public void foreignDelete() throws Exception {
-        service.delete(MEAL_ID3, ADMIN_ID);
+        service.delete(MEAL_ID1, USER_ID);
     }
 
     @Test
     public void getBetweenDates() throws Exception {
-        List<Meal> meals = service.getBetweenDates(LocalDate.of(2015, 6, 1), LocalDate.MAX, ADMIN_ID);
-        assertMatch(meals, MEAL2, MEAL1);
+        List<Meal> meals = service.getBetweenDates(LocalDate.of(2015, Month.JUNE, 2), LocalDate.MAX, ADMIN_ID);
+        assertMatch(meals, MEAL4, MEAL3, MEAL2);
     }
 
     @Test
     public void getBetweenDateTimes() throws Exception {
-        List<Meal> meals = service.getBetweenDateTimes(LocalDateTime.MIN, LocalDateTime.of(2015, 6, 1, 14, 0),ADMIN_ID);
+        List<Meal> meals = service.getBetweenDateTimes(LocalDateTime.MIN, LocalDateTime.of(2015, Month.JUNE, 1, 14, 0), ADMIN_ID);
         assertMatch(meals, MEAL1);
     }
 
     @Test
     public void getAll() throws Exception {
         List<Meal> all = service.getAll(ADMIN_ID);
-        assertMatch(all, MEAL2, MEAL1);
+        assertMatch(all, MEAL4, MEAL3, MEAL2, MEAL1);
     }
 
     @Test
@@ -86,15 +88,16 @@ public class MealServiceTest {
     @Test(expected = NotFoundException.class)
     public void foreignUpdate() throws Exception {
         Meal updated = new Meal(MEAL1);
-        updated.setId(MEAL_ID3);
+        updated.setId(MEAL_ID8);
         service.update(updated, ADMIN_ID);
     }
 
     @Test
     public void create() throws Exception {
-        Meal newMeal = new Meal(null, LocalDateTime.now(), "Админский обэд", 1555);
+        Meal newMeal = new Meal(null, LocalDateTime.of(2015, Month.JUNE, 20, 18, 0), "Админский перекусон", 1555);
         Meal created = service.create(newMeal, ADMIN_ID);
         newMeal.setId(created.getId());
-        assertMatch(service.getAll(ADMIN_ID), newMeal, MEAL2, MEAL1);
+        assertMatch(service.getAll(ADMIN_ID), MEAL4, newMeal, MEAL3, MEAL2, MEAL1);
+        assertMatch(newMeal, created);
     }
 }
