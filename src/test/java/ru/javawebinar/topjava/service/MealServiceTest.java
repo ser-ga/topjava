@@ -1,14 +1,12 @@
 package ru.javawebinar.topjava.service;
 
-import org.junit.AfterClass;
-import org.junit.AssumptionViolatedException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Stopwatch;
-import org.junit.rules.TestName;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -20,8 +18,6 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -40,7 +36,8 @@ public class MealServiceTest {
         SLF4JBridgeHandler.install();
     }
 
-    private static List<String> results = new ArrayList<>();
+    private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
+    private static StringBuilder results = new StringBuilder();
 
     @Autowired
     private MealService service;
@@ -55,14 +52,28 @@ public class MealServiceTest {
     public ExpectedException exception = ExpectedException.none();
 
     @Rule
-    public TestName name = new TestName();
+    public Stopwatch stopwatch = new Stopwatch() {
+        @Override
+        protected void succeeded(long nanos, Description description) {
+            logInfo(description, nanos);
+        }
+
+        @Override
+        protected void failed(long nanos, Throwable e, Description description) {
+            logInfo(description, nanos);
+        }
+
+        @Override
+        protected void skipped(long nanos, AssumptionViolatedException e, Description description) {
+            logInfo(description, nanos);
+        }
+    };
 
     @Test
     public void deleteNotFound() throws Exception {
         exception.expect(NotFoundException.class);
         exception.expectMessage(getNotFoundMessage(MEAL1_ID));
         service.delete(MEAL1_ID, 1);
-        exception = ExpectedException.none();
     }
 
     @Test
@@ -83,7 +94,6 @@ public class MealServiceTest {
         exception.expect(NotFoundException.class);
         exception.expectMessage(getNotFoundMessage(MEAL1_ID));
         service.get(MEAL1_ID, ADMIN_ID);
-        exception = ExpectedException.none();
     }
 
     @Test
@@ -98,7 +108,6 @@ public class MealServiceTest {
         exception.expect(NotFoundException.class);
         exception.expectMessage(getNotFoundMessage(MEAL1_ID));
         service.update(MEAL1, ADMIN_ID);
-        exception = ExpectedException.none();
     }
 
     @Test
@@ -113,37 +122,22 @@ public class MealServiceTest {
                 LocalDate.of(2015, Month.MAY, 30), USER_ID), MEAL3, MEAL2, MEAL1);
     }
 
-    @Rule
-    public Stopwatch stopwatch = new Stopwatch() {
-        @Override
-        protected void succeeded(long nanos, Description description) {
-            logInfo(description, "succeeded", nanos);
-        }
-
-        @Override
-        protected void failed(long nanos, Throwable e, Description description) {
-            logInfo(description, "failed", nanos);
-        }
-
-        @Override
-        protected void skipped(long nanos, AssumptionViolatedException e, Description description) {
-            logInfo(description, "skipped", nanos);
-        }
-    };
-
-    private static void logInfo(Description description, String status, long nanos) {
+    private static void logInfo(Description description, long nanos) {
         String testName = description.getMethodName();
-        results.add(String.format("%-20s %10s %5d ms",
-                testName, status, TimeUnit.NANOSECONDS.toMillis(nanos)));
+        log.info("Test " + testName + ": " + TimeUnit.NANOSECONDS.toMillis(nanos) + " ms");
+        results.append(String.format("%-20s %5d ms\n",
+                testName, TimeUnit.NANOSECONDS.toMillis(nanos)));
+    }
+
+    @BeforeClass
+    public static void beforeTests() {
+        results.append("\n\n######  TEST RESULTS  #######\n");
+        results.append("-----------------------------\n");
     }
 
     @AfterClass
     public static void afterTests() {
-        System.out.println("\n\n############  TEST RESULTS  #############\n" +
-                "=========================================\n" +
-                " name                  status      time\n" +
-                "-----------------------------------------");
-        results.forEach(System.out::println);
-        System.out.println("-----------------------------------------\n");
+        results.append("-----------------------------\n");
+        log.info(results.toString());
     }
 }
