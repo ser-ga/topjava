@@ -1,6 +1,13 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.AfterClass;
+import org.junit.AssumptionViolatedException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.Stopwatch;
+import org.junit.rules.TestName;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +20,9 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
@@ -30,6 +40,8 @@ public class MealServiceTest {
         SLF4JBridgeHandler.install();
     }
 
+    private static List<String> results = new ArrayList<>();
+
     @Autowired
     private MealService service;
 
@@ -39,9 +51,18 @@ public class MealServiceTest {
         assertMatch(service.getAll(USER_ID), MEAL6, MEAL5, MEAL4, MEAL3, MEAL2);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    @Rule
+    public TestName name = new TestName();
+
+    @Test
     public void deleteNotFound() throws Exception {
+        exception.expect(NotFoundException.class);
+        exception.expectMessage(getNotFoundMessage(MEAL1_ID));
         service.delete(MEAL1_ID, 1);
+        exception = ExpectedException.none();
     }
 
     @Test
@@ -57,9 +78,12 @@ public class MealServiceTest {
         assertMatch(actual, ADMIN_MEAL1);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void getNotFound() throws Exception {
+        exception.expect(NotFoundException.class);
+        exception.expectMessage(getNotFoundMessage(MEAL1_ID));
         service.get(MEAL1_ID, ADMIN_ID);
+        exception = ExpectedException.none();
     }
 
     @Test
@@ -69,9 +93,12 @@ public class MealServiceTest {
         assertMatch(service.get(MEAL1_ID, USER_ID), updated);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void updateNotFound() throws Exception {
+        exception.expect(NotFoundException.class);
+        exception.expectMessage(getNotFoundMessage(MEAL1_ID));
         service.update(MEAL1, ADMIN_ID);
+        exception = ExpectedException.none();
     }
 
     @Test
@@ -84,5 +111,39 @@ public class MealServiceTest {
         assertMatch(service.getBetweenDates(
                 LocalDate.of(2015, Month.MAY, 30),
                 LocalDate.of(2015, Month.MAY, 30), USER_ID), MEAL3, MEAL2, MEAL1);
+    }
+
+    @Rule
+    public Stopwatch stopwatch = new Stopwatch() {
+        @Override
+        protected void succeeded(long nanos, Description description) {
+            logInfo(description, "succeeded", nanos);
+        }
+
+        @Override
+        protected void failed(long nanos, Throwable e, Description description) {
+            logInfo(description, "failed", nanos);
+        }
+
+        @Override
+        protected void skipped(long nanos, AssumptionViolatedException e, Description description) {
+            logInfo(description, "skipped", nanos);
+        }
+    };
+
+    private static void logInfo(Description description, String status, long nanos) {
+        String testName = description.getMethodName();
+        results.add(String.format("%-20s %10s %5d ms",
+                testName, status, TimeUnit.NANOSECONDS.toMillis(nanos)));
+    }
+
+    @AfterClass
+    public static void afterTests() {
+        System.out.println("\n\n############  TEST RESULTS  #############\n" +
+                "=========================================\n" +
+                " name                  status      time\n" +
+                "-----------------------------------------");
+        results.forEach(System.out::println);
+        System.out.println("-----------------------------------------\n");
     }
 }
