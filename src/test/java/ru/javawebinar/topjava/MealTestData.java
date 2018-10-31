@@ -44,8 +44,4 @@ public class MealTestData {
     public static void assertMatch(Iterable<Meal> actual, Iterable<Meal> expected) {
         assertThat(actual).usingElementComparatorIgnoringFields("user").isEqualTo(expected);
     }
-
-    public static String getNotFoundMessage(int id) {
-        return "Not found entity with id=" + id;
-    }
 }

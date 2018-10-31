@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
+import static ru.javawebinar.topjava.Util.getNotFoundMessage;
 
 @ContextConfiguration({
         "classpath:spring/spring-app.xml",
@@ -42,32 +43,22 @@ public class MealServiceTest {
     @Autowired
     private MealService service;
 
-    @Test
-    public void delete() throws Exception {
-        service.delete(MEAL1_ID, USER_ID);
-        assertMatch(service.getAll(USER_ID), MEAL6, MEAL5, MEAL4, MEAL3, MEAL2);
-    }
-
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Rule
     public Stopwatch stopwatch = new Stopwatch() {
         @Override
-        protected void succeeded(long nanos, Description description) {
-            logInfo(description, nanos);
-        }
-
-        @Override
-        protected void failed(long nanos, Throwable e, Description description) {
-            logInfo(description, nanos);
-        }
-
-        @Override
-        protected void skipped(long nanos, AssumptionViolatedException e, Description description) {
+        protected void finished(long nanos, Description description) {
             logInfo(description, nanos);
         }
     };
+
+    @Test
+    public void delete() throws Exception {
+        service.delete(MEAL1_ID, USER_ID);
+        assertMatch(service.getAll(USER_ID), MEAL6, MEAL5, MEAL4, MEAL3, MEAL2);
+    }
 
     @Test
     public void deleteNotFound() throws Exception {
