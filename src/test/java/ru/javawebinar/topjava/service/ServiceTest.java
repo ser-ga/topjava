@@ -54,7 +54,7 @@ public abstract class ServiceTest {
 
     @BeforeClass
     public static void clearResult(){
-        results = new StringBuilder();
+        results.setLength(0);
     }
 
     @AfterClass
