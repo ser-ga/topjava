@@ -20,7 +20,7 @@
         <input type="hidden" name="id" value="${meal.id}">
         <dl>
             <dt><spring:message code="meal.date"/>:</dt>
-            <dd><input type="datetime-local" value="${fn:formatDateTime(meal.dateTime)}" name="dateTime" required></dd>
+            <dd><input type="datetime-local" value="${fn:formatDateTime(meal.dateTime).replace(" ", "T")}" name="dateTime" required></dd>
         </dl>
         <dl>
             <dt><spring:message code="meal.description"/>:</dt>

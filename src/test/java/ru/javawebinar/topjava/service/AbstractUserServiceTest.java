@@ -80,6 +80,13 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     }
 
     @Test
+    public void updateRole() throws Exception {
+        User updated = new User(ADMIN_WITHOUT_USER_ROLE);
+        service.update(updated);
+        assertMatch(service.get(ADMIN_ID), ADMIN_WITHOUT_USER_ROLE);
+    }
+
+    @Test
     public void getAll() throws Exception {
         List<User> all = service.getAll();
         assertMatch(all, ADMIN, USER);

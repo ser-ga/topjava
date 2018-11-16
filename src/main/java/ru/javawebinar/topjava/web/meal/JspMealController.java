@@ -5,6 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,27 +17,28 @@ import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalDate;
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
 
 @Controller
+@RequestMapping(value = "/meals")
 public class JspMealController extends AbstractMealController {
 
-    @GetMapping("/meals")
+    @GetMapping
     public String meals(Model model) {
         model.addAttribute("meals", getAll());
         return "meals";
     }
 
-    @GetMapping("/meals/delete/{id}")
+    @GetMapping("delete/{id}")
     public String deleteMeal(@PathVariable(value = "id") Integer id) {
         delete(id);
         return "redirect:/meals";
     }
 
-    @GetMapping("/meals/update/{id}")
+    @GetMapping("update/{id}")
     public String updateMeal(Model model, @PathVariable(value = "id") Integer id) {
         model.addAttribute("meal", get(id));
         return "mealForm";
     }
 
-    @GetMapping("/mealForm")
+    @GetMapping("new")
     public String addMeal(Model model) {
         Meal meal = new Meal();
         meal.setDateTime(LocalDateTime.now());
@@ -44,7 +46,7 @@ public class JspMealController extends AbstractMealController {
         return "mealForm";
     }
 
-    @PostMapping("/meals/update")
+    @PostMapping("update")
     public String updateMeal(Model model, HttpServletRequest request) {
         String id = request.getParameter("id");
         String dateTime = request.getParameter("dateTime");
@@ -61,7 +63,7 @@ public class JspMealController extends AbstractMealController {
         return "redirect:/meals";
     }
 
-    @PostMapping("meals")
+    @PostMapping("filter")
     public String filter(Model model, HttpServletRequest request) {
         LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
