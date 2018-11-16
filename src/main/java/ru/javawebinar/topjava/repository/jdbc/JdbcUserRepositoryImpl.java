@@ -2,6 +2,7 @@ package ru.javawebinar.topjava.repository.jdbc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -13,6 +14,8 @@ import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 @Repository
@@ -37,16 +40,11 @@ public class JdbcUserRepositoryImpl implements UserRepository {
 
     private final SimpleJdbcInsert insertUser;
 
-    private final SimpleJdbcInsert insertRole;
-
     @Autowired
     public JdbcUserRepositoryImpl(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.insertUser = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("id");
-        this.insertRole = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("user_roles")
-                .usingColumns("user_id", "role");
         this.jdbcTemplate = jdbcTemplate;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
@@ -66,12 +64,7 @@ public class JdbcUserRepositoryImpl implements UserRepository {
         } else {
             jdbcTemplate.update("DELETE FROM user_roles WHERE user_id=?", user.getId());
         }
-        for(Role role : user.getRoles()) {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("user_id", user.getId());
-            params.put("role", role);
-            insertRole.execute(params);
-        }
+        insertRoles(new ArrayList<>(user.getRoles()), user.getId());
         return user;
     }
 
@@ -101,5 +94,25 @@ public class JdbcUserRepositoryImpl implements UserRepository {
 //        return jdbcTemplate.query("SELECT * FROM users ORDER BY name, email", ROW_MAPPER);
         return jdbcTemplate.query(USER_WITH_ROLES_QUERY +
                 "ORDER BY u.name, u.email", USER_WITH_ROLES_MAPPER);
+    }
+
+    private void insertRoles(final List<Role> roles, Integer user_id) {
+
+        String sql = "INSERT INTO user_roles (user_id, role) VALUES (?, ?)";
+
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Role role = roles.get(i);
+                ps.setInt(1, user_id);
+                ps.setString(2, role.name());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return roles.size();
+            }
+        });
     }
 }
