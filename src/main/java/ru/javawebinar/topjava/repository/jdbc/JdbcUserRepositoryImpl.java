@@ -18,6 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 @Repository
 @Transactional(readOnly = true)
@@ -25,8 +26,9 @@ public class JdbcUserRepositoryImpl implements UserRepository {
 
     private static final RowMapper<User> USER_WITH_ROLES_MAPPER = (rs, rowNum) -> {
         List<Role> roles = new ArrayList<>();
-        for(String role : (String[]) rs.getArray("roles").getArray()){
-            roles.add(Role.valueOf(role));
+        StringTokenizer st = new StringTokenizer(rs.getString("roles").replace("ARRAY", ""), "{,}'[]");
+        while (st.hasMoreTokens()) {
+            roles.add(Role.valueOf(st.nextToken()));
         }
         return new User(rs.getInt("id"), rs.getString("name"), rs.getString("email"),
                 rs.getString("password"), rs.getInt("calories_per_day"), rs.getBoolean("enabled"), rs.getDate("registered"), roles);
