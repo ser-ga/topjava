@@ -16,23 +16,21 @@ import ru.javawebinar.topjava.repository.UserRepository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 @Transactional(readOnly = true)
 public class JdbcUserRepositoryImpl implements UserRepository {
 
     private static final RowMapper<User> USER_WITH_ROLES_MAPPER = (rs, rowNum) -> {
-        Collection<Role> roles = new ArrayList<>();
-        if (rs.getString("role_user") != null) roles.add(Role.ROLE_USER);
-        if (rs.getString("role_admin") != null) roles.add(Role.ROLE_ADMIN);
+        List<Role> roles = new ArrayList<>();
+        for(String role : (String[]) rs.getArray("roles").getArray()){
+            roles.add(Role.valueOf(role));
+        }
         return new User(rs.getInt("id"), rs.getString("name"), rs.getString("email"),
                 rs.getString("password"), rs.getInt("calories_per_day"), rs.getBoolean("enabled"), rs.getDate("registered"), roles);
     };
-
-    private static final String USER_WITH_ROLES_QUERY = "SELECT u.*, r1.role AS role_user, r2.role AS role_admin FROM users u " +
-            "LEFT JOIN user_roles r1 ON u.id = r1.user_id AND r1.role = 'ROLE_USER' " +
-            "LEFT JOIN user_roles r2 ON u.id = r2.user_id AND r2.role = 'ROLE_ADMIN' ";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -76,24 +74,27 @@ public class JdbcUserRepositoryImpl implements UserRepository {
 
     @Override
     public User get(int id) {
-        List<User> users = jdbcTemplate.query(USER_WITH_ROLES_QUERY +
-                "WHERE u.id = ?", USER_WITH_ROLES_MAPPER, id);
+        List<User> users = jdbcTemplate.query("SELECT u.*, ARRAY_AGG(r1.role) AS roles FROM users u " +
+                "LEFT JOIN user_roles r1 ON u.id = r1.user_id " +
+                "WHERE u.id = ? GROUP BY u.id", USER_WITH_ROLES_MAPPER, id);
         return DataAccessUtils.singleResult(users);
     }
 
     @Override
     public User getByEmail(String email) {
 //        return jdbcTemplate.queryForObject("SELECT * FROM users WHERE email=?", ROW_MAPPER, email);
-        List<User> users = jdbcTemplate.query(USER_WITH_ROLES_QUERY +
-                "WHERE u.email = ?", USER_WITH_ROLES_MAPPER, email);
+        List<User> users = jdbcTemplate.query("SELECT u.*, ARRAY_AGG(r1.role) AS roles FROM users u " +
+                "LEFT JOIN user_roles r1 ON u.id = r1.user_id " +
+                "WHERE u.email = ? GROUP BY u.id", USER_WITH_ROLES_MAPPER, email);
         return DataAccessUtils.singleResult(users);
     }
 
     @Override
     public List<User> getAll() {
 //        return jdbcTemplate.query("SELECT * FROM users ORDER BY name, email", ROW_MAPPER);
-        return jdbcTemplate.query(USER_WITH_ROLES_QUERY +
-                "ORDER BY u.name, u.email", USER_WITH_ROLES_MAPPER);
+        return jdbcTemplate.query("SELECT u.*, ARRAY_AGG(r1.role) AS roles FROM users u " +
+                "LEFT JOIN user_roles r1 ON u.id = r1.user_id " +
+                "GROUP BY u.id ORDER BY u.name, u.email", USER_WITH_ROLES_MAPPER);
     }
 
     private void insertRoles(final List<Role> roles, Integer user_id) {
