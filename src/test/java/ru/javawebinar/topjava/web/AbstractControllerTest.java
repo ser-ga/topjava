@@ -12,7 +12,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import ru.javawebinar.topjava.AllActiveProfileResolver;
 import ru.javawebinar.topjava.repository.JpaUtil;
-import ru.javawebinar.topjava.service.UserService;
 
 import javax.annotation.PostConstruct;
 
@@ -37,16 +36,13 @@ abstract public class AbstractControllerTest {
     protected MockMvc mockMvc;
 
     @Autowired
-    private CacheManager cacheManager;
+    protected CacheManager cacheManager;
 
     @Autowired(required = false)
-    private JpaUtil jpaUtil;
+    protected JpaUtil jpaUtil;
 
     @Autowired
-    protected UserService userService;
-
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+    protected WebApplicationContext webApplicationContext;
 
     @PostConstruct
     private void postConstruct() {
@@ -57,8 +53,7 @@ abstract public class AbstractControllerTest {
     }
 
     @BeforeEach
-    void setUp() {
-        cacheManager.getCache("users").clear();
+    protected void setUp() {
         if (jpaUtil != null) {
             jpaUtil.clear2ndLevelHibernateCache();
         }
