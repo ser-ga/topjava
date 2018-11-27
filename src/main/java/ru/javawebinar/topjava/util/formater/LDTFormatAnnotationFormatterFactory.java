@@ -16,13 +16,13 @@ public class LDTFormatAnnotationFormatterFactory implements AnnotationFormatterF
 
     @Override
     public Printer<?> getPrinter(LDTFormat annotation, Class<?> fieldType) {
-        if(fieldType.equals(LocalTime.class)) return new LocalTimeFormatter();
+        if (fieldType.equals(LocalTime.class)) return new LocalTimeFormatter();
         return new LocalDateFormatter();
     }
 
     @Override
     public Parser<?> getParser(LDTFormat annotation, Class<?> fieldType) {
-        if(fieldType.equals(LocalTime.class)) return new LocalTimeFormatter();
+        if (fieldType.equals(LocalTime.class)) return new LocalTimeFormatter();
         return new LocalDateFormatter();
     }
 }
