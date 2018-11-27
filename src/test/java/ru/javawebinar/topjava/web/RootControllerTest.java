@@ -8,8 +8,8 @@ import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -44,9 +44,7 @@ class RootControllerTest extends AbstractControllerTest {
                 .andExpect(view().name("meals"))
                 .andExpect(forwardedUrl("/WEB-INF/jsp/meals.jsp"))
                 .andExpect(model().attribute("meals", hasSize(6)))
-                .andExpect(model().attribute("meals", hasItems(
-                        MealsUtil.getWithExcess(MEALS, MealsUtil.DEFAULT_CALORIES_PER_DAY).toArray())
-                ));
+                .andExpect(model().attribute("meals", is(MealsUtil.getWithExcess(MEALS, MealsUtil.DEFAULT_CALORIES_PER_DAY))));
     }
 
 
