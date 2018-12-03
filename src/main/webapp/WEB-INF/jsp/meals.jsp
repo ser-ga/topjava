@@ -6,14 +6,14 @@
 <jsp:include page="fragments/headTag.jsp"/>
 <body>
 <script type="text/javascript" src="resources/js/topjava.common.js" defer></script>
-<script type="text/javascript" src="resources/js/mealDatatables.js" defer></script>
+<script type="text/javascript" src="resources/js/topjava.meals.js" defer></script>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 
 <div class="jumbotron pt-4">
     <div class="container">
         <h3 class="text-center"><spring:message code="meal.title"/></h3>
 
-        <form method="post" action="meals/filter">
+        <form id="filterForm">
             <div class="form-row">
                 <div class="col-md-auto mb-3">
                     <label for="startDate"><spring:message code="meal.startDate"/>:</label>
@@ -38,10 +38,16 @@
             </div>
             <div class="form-row">
                 <div class="col-md-auto">
-                    <button type="submit" class="btn btn-primary"><spring:message code="meal.filter"/></button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelFilter()">
+                        <span class="fa fa-cancel"></span>
+                        <spring:message code="common.cancel"/>
+                    </button>
                 </div>
                 <div class="col-md-auto">
-                    <button class="btn btn-primary"><spring:message code="common.cancel"/></button>
+                    <button type="button" class="btn btn-primary" onclick="filter()">
+                        <span class="fa fa-filter"></span>
+                        <spring:message code="meal.filter"/>
+                    </button>
                 </div>
             </div>
         </form>
@@ -61,6 +67,7 @@
                 <th></th>
             </tr>
             </thead>
+            <tbody>
             <c:forEach items="${meals}" var="meal">
                 <jsp:useBean id="meal" scope="page" type="ru.javawebinar.topjava.to.MealTo"/>
                 <tr data-mealExcess="${meal.excess}">
@@ -76,6 +83,7 @@
                     <td><a class="delete" id="${meal.id}"><span class="fa fa-remove"></span></a></td>
                 </tr>
             </c:forEach>
+            </tbody>
         </table>
     </div>
 </div>
@@ -116,7 +124,7 @@
                     <span class="fa fa-close"></span>
                     <spring:message code="common.cancel"/>
                 </button>
-                <button type="button" class="btn btn-primary" onclick="save()">
+                <button type="button" class="btn btn-primary" onclick="saveMeal()">
                     <span class="fa fa-check"></span>
                     <spring:message code="common.save"/>
                 </button>
