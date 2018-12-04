@@ -2,6 +2,7 @@ package ru.javawebinar.topjava.web.user;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
@@ -38,7 +39,7 @@ public class AdminAjaxController extends AbstractUserController {
     }
 
     @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void setActive(@PathVariable("id") int id, @RequestParam(value = "enable") Boolean enable) {
-        service.setActive(id, enable);
+    public ResponseEntity setActive(@PathVariable("id") int id, @RequestParam(value = "enable") Boolean enable) {
+        return ResponseEntity.ok(service.setActive(id, enable));
     }
 }

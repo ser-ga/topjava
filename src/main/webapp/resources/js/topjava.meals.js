@@ -34,7 +34,7 @@ $(function () {
 });
 
 function filter() {
-    if(checkEmpty()) return;
+    if(checkEmpty()) updateTable();
     let form = $("#filterForm");
     $.ajax({
         type: "POST",

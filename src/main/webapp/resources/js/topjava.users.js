@@ -51,14 +51,16 @@ function setActive() {
             type: "POST",
             url: ajaxUrl + userId,
             data: {enable: enableUser},
-        }).done(function () {
-            if (enableUser) {
-                tableRow.css("opacity", "1");
-                successNoty("Enabled");
-            }
-            else {
-                tableRow.css("opacity", "0.3");
-                successNoty("Disabled");
+            success: function(data){
+                console.log(data);
+                if (enableUser && data) {
+                    tableRow.css("opacity", "1");
+                    successNoty("Enabled");
+                }
+                else {
+                    tableRow.css("opacity", "0.3");
+                    successNoty("Disabled");
+                }
             }
         });
     });
