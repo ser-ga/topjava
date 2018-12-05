@@ -47,20 +47,22 @@ function setActive() {
         let tableRow = $(this).closest("tr");
         let userId = $(this).attr("id");
         let enableUser = this.checked;
+        let checkbox = $(this);
         $.ajax({
             type: "POST",
             url: ajaxUrl + userId,
             data: {enable: enableUser},
-            success: function(data){
-                console.log(data);
-                if (enableUser && data) {
-                    tableRow.css("opacity", "1");
+            success: function () {
+                if (enableUser) {
                     successNoty("Enabled");
                 }
                 else {
-                    tableRow.css("opacity", "0.3");
                     successNoty("Disabled");
                 }
+                tableRow.attr("data-userEnabled", enableUser);
+            },
+            error: function () {
+                checkbox.prop("checked", !enableUser);
             }
         });
     });
