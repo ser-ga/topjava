@@ -23,6 +23,7 @@ function updateRow(id) {
         $.each(data, function (key, value) {
             form.find("input[name='" + key + "']").val(value);
         });
+        replaceDateTimeT("T", " ");
         $('#editRow').modal();
     });
 }
@@ -41,7 +42,13 @@ function updateTableByData(data) {
     context.datatableApi.clear().rows.add(data).draw();
 }
 
+function replaceDateTimeT(from, to) {
+    let dt = form.find("#dateTime").val().replace(from, to).substring(0, 16);
+    form.find("#dateTime").val(dt);
+}
+
 function save() {
+    replaceDateTimeT(" ", "T");
     $.ajax({
         type: "POST",
         url: context.ajaxUrl,

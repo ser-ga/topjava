@@ -63,4 +63,24 @@ $(function () {
             $.get(userAjaxUrl, updateTableByData);
         }
     });
+    jQuery.datetimepicker.setLocale('ru');
+    $('#startDate').datetimepicker({
+        format: 'Y-m-d',
+        timepicker: false
+    });
+    $('#endDate').datetimepicker({
+        format: 'Y-m-d',
+        timepicker: false
+    });
+    $('#startTime').datetimepicker({
+        format: 'H:i',
+        datepicker: false
+    });
+    $('#endTime').datetimepicker({
+        format: 'H:i',
+        datepicker: false
+    });
+    $('#dateTime').datetimepicker({
+        format: 'Y-m-d H:i'
+    });
 });
