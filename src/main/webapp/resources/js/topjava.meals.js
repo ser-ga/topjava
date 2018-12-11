@@ -1,24 +1,24 @@
-const userAjaxUrl = "ajax/profile/meals/";
+const mealsAjaxUrl = "ajax/profile/meals/";
 
 function updateFilteredTable() {
     $.ajax({
         type: "GET",
-        url: "ajax/profile/meals/filter",
+        url: mealsAjaxUrl + "filter",
         data: $("#filter").serialize()
     }).done(updateTableByData);
 }
 
 function clearFilter() {
     $("#filter")[0].reset();
-    $.get("ajax/profile/meals/", updateTableByData);
+    $.get(mealsAjaxUrl, updateTableByData);
 }
 
 $(function () {
     makeEditable({
-        ajaxUrl: "ajax/profile/meals/",
+        ajaxUrl: mealsAjaxUrl,
         datatableApi: $("#datatable").DataTable({
             "ajax": {
-                "url": userAjaxUrl,
+                "url": mealsAjaxUrl,
                 "dataSrc": ""
             },
             "paging": false,
@@ -26,11 +26,6 @@ $(function () {
             "columns": [
                 {
                     "data": "dateTime",
-                    "render": {
-                        "display": function (data) {
-                            return data.replace("T", " ").substring(0, 16);
-                        }
-                    }
                 },
                 {
                     "data": "description"
@@ -60,7 +55,7 @@ $(function () {
             }
         }),
         updateTable: function () {
-            $.get(userAjaxUrl, updateTableByData);
+            $.get(mealsAjaxUrl, updateTableByData);
         }
     });
     jQuery.datetimepicker.setLocale('ru');
@@ -84,3 +79,33 @@ $(function () {
         format: 'Y-m-d H:i'
     });
 });
+
+function saveMeal() {
+    let dt = replaceT(form.find("#dateTime").val(), " ", "T");
+    form.find("#dateTime").val(dt);
+    if(!save()) {
+        let dt = replaceT(form.find("#dateTime").val(), "T", " ");
+        form.find("#dateTime").val(dt);
+    }
+    setTimeout(updateFilteredTable, 100);
+}
+
+$.ajaxSetup({
+    converters: {
+        "text json": function (results) {
+            let data = jQuery.parseJSON(results);
+            if (Array.isArray(data)) {
+                for (let i = 0; i < data.length; i++) {
+                    data[i].dateTime = replaceT(data[i].dateTime, "T", " ");
+                }
+            } else if (typeof(data) === 'object') {
+                data.dateTime = replaceT(data.dateTime, "T", " ");
+            }
+            return data;
+        }
+    }
+});
+
+function replaceT(val, from, to) {
+    return val.replace(from, to).substring(0, 16);
+}

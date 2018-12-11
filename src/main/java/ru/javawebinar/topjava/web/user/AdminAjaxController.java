@@ -12,7 +12,7 @@ import ru.javawebinar.topjava.util.UserUtil;
 import javax.validation.Valid;
 import java.util.List;
 
-import static ru.javawebinar.topjava.util.Util.formatBindingResults;
+import static ru.javawebinar.topjava.util.ValidationUtil.formatBindingErrors;
 
 @RestController
 @RequestMapping("/ajax/admin/users")
@@ -40,7 +40,7 @@ public class AdminAjaxController extends AbstractUserController {
     @PostMapping
     public ResponseEntity<String> createOrUpdate(@Valid UserTo userTo, BindingResult result) {
         if (result.hasErrors()) {
-            return new ResponseEntity<>(formatBindingResults(result), HttpStatus.UNPROCESSABLE_ENTITY);
+            return formatBindingErrors(result);
         }
         if (userTo.isNew()) {
             super.create(UserUtil.createNewFromTo(userTo));

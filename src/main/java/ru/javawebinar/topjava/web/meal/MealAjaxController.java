@@ -14,8 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static ru.javawebinar.topjava.util.MealsUtil.createFromTo;
-import static ru.javawebinar.topjava.util.Util.formatBindingResults;
+import static ru.javawebinar.topjava.util.ValidationUtil.formatBindingErrors;
 
 @RestController
 @RequestMapping(value = "/ajax/profile/meals")
@@ -41,14 +40,14 @@ public class MealAjaxController extends AbstractMealController {
     }
 
     @PostMapping
-    public ResponseEntity createOrUpdate(@DateTimeFormat @Valid MealTo mealTo, BindingResult result) {
+    public ResponseEntity<String> createOrUpdate(@DateTimeFormat @Valid Meal meal, BindingResult result) {
         if (result.hasErrors()) {
-            return new ResponseEntity<>(formatBindingResults(result), HttpStatus.UNPROCESSABLE_ENTITY);
+            return formatBindingErrors(result);
         }
-        if (mealTo.isNew()) {
-            super.create(createFromTo(mealTo));
+        if (meal.isNew()) {
+            super.create(meal);
         } else {
-            super.update(createFromTo(mealTo), mealTo.getId());
+            super.update(meal, meal.getId());
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }

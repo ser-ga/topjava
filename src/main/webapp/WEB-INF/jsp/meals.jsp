@@ -101,7 +101,7 @@
                     <span class="fa fa-close"></span>
                     <spring:message code="common.cancel"/>
                 </button>
-                <button type="button" class="btn btn-primary" onclick="save()">
+                <button type="button" class="btn btn-primary" onclick="saveMeal()">
                     <span class="fa fa-check"></span>
                     <spring:message code="common.save"/>
                 </button>
@@ -112,6 +112,7 @@
 <jsp:include page="fragments/footer.jsp"/>
 </body>
 <script type="text/javascript">
+    <jsp:include page="fragments/i18n.jsp"/>
     i18n["addTitle"] = '<spring:message code="meal.add"/>';
     i18n["editTitle"] = '<spring:message code="meal.edit"/>';
 </script>
