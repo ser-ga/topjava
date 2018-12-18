@@ -1,7 +1,5 @@
 package ru.javawebinar.topjava.util;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import ru.javawebinar.topjava.HasId;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
@@ -10,6 +8,9 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 import java.util.StringJoiner;
 
 public class ValidationUtil {
+
+    public static final String USERS_UNIQUE_EMAIL_IDX = "users_unique_email_idx";
+    public static final String MEALS_UNIQUE_USER_DATETIME_IDX = "meals_unique_user_datetime_idx";
 
     public static <T> T checkNotFoundWithId(T object, int id) {
         return checkNotFound(object, "id=" + id);
@@ -59,22 +60,32 @@ public class ValidationUtil {
         return result;
     }
 
-    public static ResponseEntity<String> getErrorResponse(BindingResult result) {
-        StringJoiner joiner = new StringJoiner("<br>");
+    public static void handleErrorResponse(BindingResult result) {
+        throw new IllegalRequestDataException(parseErrorResponse(result, "<br>"));
+    }
+
+    public static String parseErrorResponse(BindingResult result, String delimiter) {
+        StringJoiner joiner = new StringJoiner(delimiter);
         result.getFieldErrors().forEach(
                 fe -> {
                     String msg = fe.getDefaultMessage();
                     if (msg != null) {
                         if (!msg.startsWith(fe.getField())) {
-                            msg = fe.getField() + ' ' + msg;
+                            msg = fe.getField() + ':' + ' ' + msg;
                         }
                         joiner.add(msg);
                     }
                 });
-        return new ResponseEntity<>(joiner.toString(), HttpStatus.UNPROCESSABLE_ENTITY);
+        return joiner.toString();
     }
 
     public static String getMessage(Throwable e) {
         return e.getLocalizedMessage() != null ? e.getLocalizedMessage() : e.getClass().getName();
+    }
+
+    public static String checkIdx(Throwable root) {
+        if (getMessage(root).contains(USERS_UNIQUE_EMAIL_IDX)) return "User with this email already exists";
+        if (getMessage(root).contains(MEALS_UNIQUE_USER_DATETIME_IDX)) return "Meal for this time already exists";
+        return getMessage(root);
     }
 }

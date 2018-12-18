@@ -4,17 +4,20 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.javawebinar.topjava.TestUtil;
+import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
+import ru.javawebinar.topjava.util.exception.ErrorType;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import java.util.Collections;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static ru.javawebinar.topjava.TestUtil.readFromJsonResultActions;
 import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
 import static ru.javawebinar.topjava.UserTestData.*;
@@ -89,8 +92,9 @@ class AdminRestControllerTest extends AbstractControllerTest {
         mockMvc.perform(put(REST_URL + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(ADMIN))
-                .content(JsonUtil.writeValue(updated)))
-                .andExpect(status().isNoContent());
+                .content(UserTestData.jsonWithPassword(updated, "password")))
+                .andExpect(status().isNoContent())
+                .andDo(print());
 
         assertMatch(userService.get(USER_ID), updated);
     }
@@ -118,5 +122,29 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(getUserMatcher(ADMIN, USER)));
+    }
+
+    @Test
+    void testValidateUpdate() throws Exception {
+        mockMvc.perform(put(REST_URL + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(JsonUtil.writeValue(new User())))
+                .andExpect(jsonPath("$.*", hasSize(3)))
+                .andExpect(jsonPath("$.url", is("http://localhost" + REST_URL + USER_ID)))
+                .andExpect(jsonPath("$.type", is(String.valueOf(ErrorType.VALIDATION_ERROR))))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void testValidateCreate() throws Exception {
+        mockMvc.perform(post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(JsonUtil.writeValue(new User())))
+                .andExpect(jsonPath("$.*", hasSize(3)))
+                .andExpect(jsonPath("$.url", is("http://localhost" + REST_URL)))
+                .andExpect(jsonPath("$.type", is(String.valueOf(ErrorType.VALIDATION_ERROR))))
+                .andExpect(status().isUnprocessableEntity());
     }
 }

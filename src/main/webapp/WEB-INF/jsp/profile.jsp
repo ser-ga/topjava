@@ -2,6 +2,7 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="topjava" tagdir="/WEB-INF/tags" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <html>
 <jsp:include page="fragments/headTag.jsp"/>
@@ -17,7 +18,7 @@
                 <h3>${userTo.name} <spring:message code="${register ? 'app.register' : 'app.profile'}"/></h3>
                 <form:form class="form-group" modelAttribute="userTo" method="post" action="${register ? 'register' : 'profile'}"
                            charset="utf-8" accept-charset="UTF-8">
-
+                    <c:if test="${!register}"><form:hidden path="id"/></c:if>
                     <topjava:inputField labelCode="user.name" name="name"/>
                     <topjava:inputField labelCode="user.email" name="email"/>
                     <topjava:inputField labelCode="user.password" name="password" inputType="password"/>
