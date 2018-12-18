@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.util.exception.ErrorType;
@@ -150,5 +152,37 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(jsonPath("$.*", hasSize(3)))
                 .andExpect(jsonPath("$.url", is("http://localhost" + REST_URL)))
                 .andExpect(jsonPath("$.type", is(String.valueOf(ErrorType.VALIDATION_ERROR))));
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void testCreateWithExistingDatetime() throws Exception {
+        Meal meal = new Meal(ADMIN_MEAL1.getDateTime(), "Test Meal", 1000);
+        mockMvc.perform(post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(meal))
+                .with(userHttpBasic(ADMIN)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.*", hasSize(3)))
+                .andExpect(jsonPath("$.url", is("http://localhost" + REST_URL)))
+                .andExpect(jsonPath("$.type", is(String.valueOf(ErrorType.DATA_ERROR))))
+                .andExpect(jsonPath("$.detail", is("Meal for this time already exists")))
+                .andDo(print());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void testUpdateWithExistingDatetime() throws Exception {
+        Meal meal = new Meal(MEAL2.getDateTime(), "Test Meal", 1000);
+        mockMvc.perform(put(REST_URL + MEAL1_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(meal))
+                .with(userHttpBasic(USER)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.*", hasSize(3)))
+                .andExpect(jsonPath("$.url", is("http://localhost" + REST_URL + MEAL1_ID)))
+                .andExpect(jsonPath("$.type", is(String.valueOf(ErrorType.DATA_ERROR))))
+                .andExpect(jsonPath("$.detail", is("Meal for this time already exists")))
+                .andDo(print());
     }
 }

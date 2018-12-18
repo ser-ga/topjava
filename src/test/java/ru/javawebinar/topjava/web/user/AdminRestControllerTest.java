@@ -3,6 +3,8 @@ package ru.javawebinar.topjava.web.user;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.TestUtil;
 import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.Role;
@@ -146,5 +148,37 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .andExpect(jsonPath("$.url", is("http://localhost" + REST_URL)))
                 .andExpect(jsonPath("$.type", is(String.valueOf(ErrorType.VALIDATION_ERROR))))
                 .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void testCreateWithExistingEmail() throws Exception {
+        User user = new User(null, "new User", "admin@gmail.com", "newPass", 2300, Role.ROLE_USER, Role.ROLE_ADMIN);
+        mockMvc.perform(post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(jsonWithPassword(user, "newPass")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.*", hasSize(3)))
+                .andExpect(jsonPath("$.url", is("http://localhost" + REST_URL)))
+                .andExpect(jsonPath("$.type", is(String.valueOf(ErrorType.DATA_ERROR))))
+                .andExpect(jsonPath("$.detail", is("User with this email already exists")))
+                .andDo(print());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void testUpdateWithExistingEmail() throws Exception {
+        User user = new User(null, "new User", "admin@gmail.com", "newPass", 2300, Role.ROLE_USER, Role.ROLE_ADMIN);
+        mockMvc.perform(put(REST_URL + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(UserTestData.jsonWithPassword(user, "password")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.*", hasSize(3)))
+                .andExpect(jsonPath("$.url", is("http://localhost" + REST_URL + USER_ID)))
+                .andExpect(jsonPath("$.type", is(String.valueOf(ErrorType.DATA_ERROR))))
+                .andExpect(jsonPath("$.detail", is("User with this email already exists")))
+                .andDo(print());
     }
 }
