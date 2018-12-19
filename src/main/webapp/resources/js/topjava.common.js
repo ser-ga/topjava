@@ -94,9 +94,19 @@ function successNoty(key) {
 function failNoty(jqXHR) {
     closeNoty();
     // https://stackoverflow.com/questions/48229776
-    const errorInfo = JSON.parse(jqXHR.responseText);
+    let txt = jqXHR.responseText;
+    let obj = jqXHR.responseJSON;
+    let errInfo = '';
+    if (obj.length !== undefined) {
+        for (let i = 0; i < obj.length; i++) {
+            errInfo = errInfo + "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + i18n["common.errorStatus"] + ": " + jqXHR.status + "<br>" + jqXHR.responseJSON[i].type + "<br>" + jqXHR.responseJSON[i].detail + "<br>";
+        }
+    } else {
+        const errorInfo = JSON.parse(txt);
+        errInfo = errInfo + "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + i18n["common.errorStatus"] + ": " + jqXHR.status + "<br>" + errorInfo.type + "<br>" + errorInfo.detail;
+    }
     failedNote = new Noty({
-        text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + i18n["common.errorStatus"] + ": " + jqXHR.status + "<br>" + errorInfo.type + "<br>" + errorInfo.detail,
+        text: errInfo,
         type: "error",
         layout: "bottomRight"
     }).show();

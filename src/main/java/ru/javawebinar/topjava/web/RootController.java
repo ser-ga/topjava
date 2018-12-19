@@ -30,19 +30,19 @@ public class RootController extends AbstractUserController {
     }
 
     @GetMapping("/")
-    public String root() {
+    public String root(Model model) {
         return "redirect:meals";
     }
 
     //    @Secured("ROLE_ADMIN")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/users")
-    public String users() {
+    public String users(Model model) {
         return "users";
     }
 
     @GetMapping(value = "/login")
-    public String login() {
+    public String login(Model model) {
         return "login";
     }
 
@@ -52,7 +52,7 @@ public class RootController extends AbstractUserController {
     }
 
     @GetMapping("/profile")
-    public String profile() {
+    public String profile(Model model) {
         return "profile";
     }
 

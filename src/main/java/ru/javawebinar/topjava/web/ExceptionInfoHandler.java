@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,6 +22,8 @@ import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 
@@ -50,14 +53,14 @@ public class ExceptionInfoHandler {
 
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler({BindException.class})
-    public ErrorInfo bindingNotValid(HttpServletRequest req, BindException e) {
-        return logAndGetErrorInfo(req, new Exception(ValidationUtil.parseErrorResponse(e.getBindingResult(), "<br>")), false, VALIDATION_ERROR);
+    public List<ErrorInfo> bindingNotValid(HttpServletRequest req, BindException e) {
+        return logAndGetListErrorInfo(req, e, e.getBindingResult(), VALIDATION_ERROR);
     }
 
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler({MethodArgumentNotValidException.class})
-    public ErrorInfo bindingNotValid(HttpServletRequest req, MethodArgumentNotValidException e) {
-        return logAndGetErrorInfo(req, new Exception(ValidationUtil.parseErrorResponse(e.getBindingResult(), "; ")), false, VALIDATION_ERROR);
+    public List<ErrorInfo> bindingNotValid(HttpServletRequest req, MethodArgumentNotValidException e) {
+        return logAndGetListErrorInfo(req, e, e.getBindingResult(), VALIDATION_ERROR);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -75,5 +78,23 @@ public class ExceptionInfoHandler {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
         return new ErrorInfo(req.getRequestURL(), errorType, ValidationUtil.checkIdx(rootCause));
+    }
+
+    private static List<ErrorInfo> logAndGetListErrorInfo(HttpServletRequest req, Exception e, BindingResult bindingResult, ErrorType errorType) {
+        Throwable rootCause = ValidationUtil.getRootCause(e);
+        log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
+
+        List<ErrorInfo> result = new ArrayList<>();
+        bindingResult.getFieldErrors().forEach(
+                fe -> {
+                    String msg = fe.getDefaultMessage();
+                    if (msg != null) {
+                        if (!msg.startsWith(fe.getField())) {
+                            msg = fe.getField() + ':' + ' ' + msg;
+                        }
+                        result.add(new ErrorInfo(req.getRequestURL(), errorType, msg));
+                    }
+                });
+        return result;
     }
 }

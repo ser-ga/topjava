@@ -2,7 +2,8 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
-
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:set var="page" value="${pageContext.request.requestURL.substring(pageContext.request.requestURL.lastIndexOf('/')+1, pageContext.request.requestURL.lastIndexOf('.'))}"/>
 <nav class="navbar navbar-dark bg-dark py-0">
     <div class="container">
         <a href="meals" class="navbar-brand"><img src="resources/images/icon-meal.png"> <spring:message code="app.title"/></a>
@@ -26,5 +27,14 @@
                 </button>
             </form:form>
         </sec:authorize>
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                ${pageContext.response.locale}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="${page}?lang=en">en</a>
+                <a class="dropdown-item" href="${page}?lang=ru">ru</a>
+            </div>
+        </div>
     </div>
 </nav>
