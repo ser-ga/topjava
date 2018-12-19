@@ -73,4 +73,7 @@
     <mvc:interceptors>
         <bean class="ru.javawebinar.topjava.web.interceptor.ModelInterceptor"/>
     </mvc:interceptors>
+
+    <bean class="ru.javawebinar.topjava.util.validator.UserEmailValidator"/>
+    <bean class="ru.javawebinar.topjava.util.validator.MealDatetimeValidator"/>
 </beans>
